@@ -10,18 +10,24 @@ import java.util.List;
  * Created by gbadenhorst on 6/12/2017.
  */
 public class BookingStorageActor extends AbstractLoggingActor  {
-    private String bookingId;
+
 
     private List bookingList;
 
     public static class AddBooking {
 
+        private String bookingId;
 
+        public AddBooking(String bookingId) {
+            this.bookingId = bookingId;
+        }
+
+        public String getBookingId() {
+            return bookingId;
+        }
     }
 
-    public String getBookingId() {
-        return bookingId;
-    }
+
 
     public BookingStorageActor() {
         this.bookingList = new ArrayList();
@@ -31,8 +37,11 @@ public class BookingStorageActor extends AbstractLoggingActor  {
     public Receive createReceive() {
         return receiveBuilder()
                 .match(BookingStorageActor.AddBooking.class,addBooking -> {
+
+                })
+                .match (AddBooking.class, addBooking -> {
                     this.bookingList.add(addBooking);
-                    log().info("BookingStorageActor: Booking Added : ");
+                    log().info("BookingStorageActor: Booking Added : " + addBooking.getBookingId());
                 })
                 .matchAny(
                         o  -> {
@@ -41,4 +50,5 @@ public class BookingStorageActor extends AbstractLoggingActor  {
                 )
                 .build();
     }
+
 }
