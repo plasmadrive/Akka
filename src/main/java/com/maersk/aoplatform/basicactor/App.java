@@ -14,12 +14,12 @@ public class App {
         final ActorSystem system = ActorSystem.create("system");
         final ActorRef counter = system.actorOf(Props.create(CounterActor.class),"counter");
 
-        counter.tell(new Add(20),ActorRef.noSender());
+        counter.tell(new AddMessage(20),ActorRef.noSender());
 
         Thread t1 = new Thread(() -> {
 
             for (int i = 1;i < 6; i++) {
-                counter.tell(new Add(i),ActorRef.noSender());
+                counter.tell(new AddMessage(i),ActorRef.noSender());
             }
         }
 
@@ -28,7 +28,7 @@ public class App {
         Thread t2 = new Thread(() -> {
 
             for (int i = 1;i < 6; i++) {
-                counter.tell(new Subtract(i),ActorRef.noSender());
+                counter.tell(new SubtractMessage(i),ActorRef.noSender());
             }
         }
 

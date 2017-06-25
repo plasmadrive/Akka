@@ -1,13 +1,13 @@
 package com.maersk.aoplatform.basicactor;
 
-import akka.actor.AbstractActor;
 import akka.actor.AbstractLoggingActor;
-import akka.japi.pf.ReceiveBuilder;
 
 /**
  * Created by g on 02/06/2017.
  */
 public class CounterActor extends AbstractLoggingActor {
+
+
 
     private int count;
 
@@ -23,23 +23,25 @@ public class CounterActor extends AbstractLoggingActor {
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Add.class, this::onAdd)
-                .match(Subtract.class,this::onSubtract)
+                .match(AddMessage.class, this::onAdd)
+                .match(SubtractMessage.class,this::onSubtract)
                 .build();
     }
 
-    private void onAdd(Add add) {
+    private void onAdd(AddMessage add) {
         log().info("Adding " + add.getAmount());
         count += add.getAmount();
         log().info("count : " + count);
 
     }
 
-    private void onSubtract(Subtract dec) {
+    private void onSubtract(SubtractMessage dec) {
         if (dec.getAmount() <= count) {
             log().info("Subtracting " + dec.getAmount());
             count -= dec.getAmount();
             log().info("count  : " + count);
+        } else {
+            log().error("CounterActor: subtract: requested subtract amount " + dec.getAmount() + " is greater than current total " + this.count);
         }
 
     }
