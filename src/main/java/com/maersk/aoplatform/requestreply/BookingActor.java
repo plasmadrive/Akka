@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.AbstractLoggingActor;
 import akka.actor.ActorRef;
 import akka.util.Timeout;
+import scala.Serializable;
 import scala.concurrent.duration.Duration;
 
 /**
@@ -18,15 +19,18 @@ import static akka.pattern.PatternsCS.ask;
 
 public class BookingActor extends AbstractLoggingActor {
 
-    private long bookingId = 1L;
-    private ActorRef capacity;
-    private ActorRef bookingStorage;
-
-
-    public static class RequestBooking {
+    //  Message to request booking.  No booking data
+    public static class RequestBooking implements Serializable {
+        // should contain booking request data
 
     }
 
+    // keep a count of booking id
+    private long bookingId = 1L;
+    // reference to a  CapactityActor
+    private ActorRef capacity;
+    // reference to a Booking
+    private ActorRef bookingStorage;
 
 
 
@@ -34,6 +38,7 @@ public class BookingActor extends AbstractLoggingActor {
         this.capacity = capacity;
         this.bookingStorage = bookingStorage;
     }
+
 
     @Override
     public Receive createReceive() {
@@ -43,19 +48,32 @@ public class BookingActor extends AbstractLoggingActor {
                 .build();
     }
 
+
+
     private void processBooking(RequestBooking requestBooking){
+        // set a timeout of 5 seconds
         Timeout t = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+
         String bookingIdAsStr = Long.toString(bookingId);
+
+        // Ask the capacity actor if there is sufficient capacity  and get back a completion stage
         CompletionStage<Object> stage = ask(capacity,new CapacityActor.CheckCapacity(),t);
+
+        // Get the result
         Object response = stage.toCompletableFuture().join();
+
+
         if( response instanceof  CapacityActor.CapacityAvailable ){
+
+            // Store the booking using the booking storage actor
             bookingStorage.tell(new BookingStorageActor.AddBooking(bookingIdAsStr),getSelf());
             log().info("BookingActor : Booking created with id : " +  bookingIdAsStr);
+
+            // increment the latest available booking id
             bookingId++;
         } else {
             log().error("BookingActor : Capacity Unavailable");
         }
-        //CompletableFuture future= ask(capacity,new CapacityActor.CheckCapacity(),t).toCompletableFuture();
 
 
     }
